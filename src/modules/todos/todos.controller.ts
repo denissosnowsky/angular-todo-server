@@ -7,8 +7,9 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { TodoDTO } from 'src/types/dto/create-todo.dto';
+import { TodoDAO } from 'src/types/dao/create-todo.dao';
 import { Todo } from './schemas/todo.schema';
 import { TodosService } from './todos.service';
 
@@ -17,22 +18,44 @@ export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Post()
-  createTodo(@Body() newTodo: TodoDTO): Promise<Todo> {
+  createTodo(@Body() newTodo: TodoDAO): Promise<Todo> {
     return this.todosService.createTodo(newTodo);
   }
 
   @Put(':id')
-  completeTodo(@Param('id') todoId: string): Promise<void> {
+  completeTodo(@Param('id', ParseIntPipe) todoId: number): Promise<void> {
     return this.todosService.completeTodo(todoId);
   }
 
-  @Delete(':id')
-  deleteTodo(@Param('id') todoId: string): Promise<void> {
-    return this.todosService.deleteTodo(todoId);
+  @Put(':id/change')
+  changeTodo(
+    @Param('id', ParseIntPipe) todoId: number,
+    @Body() body: { text: string },
+  ): Promise<void> {
+    return this.todosService.changeTodo(todoId, body.text);
+  }
+
+  @Delete('/delete')
+  deleteTodo(@Query('id') ids: Array<number>): Promise<void> {
+    return this.todosService.deleteTodo(ids);
   }
 
   @Get()
-  getAllTodos(): Promise<Todo[]> {
-    return this.todosService.findAllTodos();
+  getTodos(
+    @Query('limit') limit?: number,
+    @Query('skip') skip?: number,
+  ): Promise<{
+    todos: Todo[];
+    count: number;
+  }> {
+    return this.todosService.findTodos(
+      limit ?? Number(limit),
+      skip ?? Number(skip),
+    );
+  }
+
+  @Get('/cursor')
+  getTodoCursor(): Promise<number> {
+    return this.todosService.getTodoCursor();
   }
 }
