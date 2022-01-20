@@ -28,8 +28,8 @@ export class TodosRepository {
 
   async findTodos(limit?: number, skip?: number): Promise<Todo[]> {
     return limit
-      ? this.todoModel.find().limit(limit).skip(skip)
-      : this.todoModel.find();
+      ? this.todoModel.find().limit(limit).skip(skip).sort({ id: -1 })
+      : this.todoModel.find().sort({ id: -1 });
   }
 
   async deleteTodo(ids: Array<number>): Promise<void> {
@@ -37,7 +37,11 @@ export class TodosRepository {
   }
 
   async completeTodo(id: number): Promise<void> {
-    await this.todoModel.findOneAndUpdate({ id }, { completed: true });
+    const todo = await this.todoModel.findOne({ id });
+    await this.todoModel.findOneAndUpdate(
+      { id },
+      { completed: !todo.completed },
+    );
   }
 
   async changeTodo(id: number, text: string): Promise<void> {
