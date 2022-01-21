@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 
 import { TodoDAO } from 'src/types/dao/create-todo.dao';
-import { TodoTable } from 'src/types/tables/create-todo.table';
 import { Todo } from './schemas/todo.schema';
 import { TodosRepository } from './todos.repository';
 
@@ -52,8 +51,13 @@ export class TodosService {
           if (externalData.length > 0) {
             this.isDatabaseInited = true;
             return {
-              todos: externalData.slice(0, limit),
+              todos: limit ? externalData.slice(0, limit) : externalData,
               count: await this.todosRepository.getTodosCount(),
+            };
+          } else {
+            return {
+              todos: [],
+              count: 0,
             };
           }
         }
@@ -93,7 +97,7 @@ export class TodosService {
   async getTodoCursor(): Promise<number> {
     this.logger.log('getting cursor...');
     try {
-      const res: Array<TodoTable> = await this.todosRepository.getTodoCursor();
+      const res: Array<Todo> = await this.todosRepository.getTodoCursor();
       if (res[0]) {
         return res[0].id;
       } else {
