@@ -13,6 +13,33 @@ import { TodosRepository } from './todos.repository';
 export class TodosService {
   private isDatabaseInited = false;
   private readonly logger = new Logger(TodosService.name);
+  private initializeDatabase = async (
+    todosCount: number,
+    limit: number,
+    skip: number,
+  ) => {
+    if (todosCount) {
+      this.isDatabaseInited = true;
+      return {
+        todos: await this.todosRepository.findTodos(limit, skip),
+        count: todosCount,
+      };
+    } else {
+      const externalData = await this.todosRepository.getExternalData();
+      if (externalData.length > 0) {
+        this.isDatabaseInited = true;
+        return {
+          todos: limit ? externalData.slice(0, limit) : externalData,
+          count: await this.todosRepository.getTodosCount(),
+        };
+      } else {
+        return {
+          todos: [],
+          count: 0,
+        };
+      }
+    }
+  };
 
   constructor(private todosRepository: TodosRepository) {}
 
@@ -41,22 +68,7 @@ export class TodosService {
         };
       } else {
         const todosCount = await this.todosRepository.getTodosCount();
-        if (todosCount) {
-          this.isDatabaseInited = true;
-          return {
-            todos: await this.todosRepository.findTodos(limit, skip),
-            count: todosCount,
-          };
-        } else {
-          const externalData = await this.todosRepository.getExternalData();
-          if (externalData.length > 0) {
-            this.isDatabaseInited = true;
-            return {
-              todos: externalData.slice(0, limit),
-              count: await this.todosRepository.getTodosCount(),
-            };
-          }
-        }
+        return this.initializeDatabase(todosCount, limit, skip);
       }
     } catch {
       throw new InternalServerErrorException();
