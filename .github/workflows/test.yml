@@ -37,5 +37,8 @@ jobs:
       - name: Lint
         run: yarn run lint
         
-      - name: Test
-        run: yarn run test
+      - name: Unit Tests
+        run: yarn run test:cov
+
+      - name: E2D Tests
+        run: yarn run test:e2e

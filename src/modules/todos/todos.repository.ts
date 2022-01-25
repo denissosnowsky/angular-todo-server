@@ -6,10 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import fetch from 'node-fetch';
 
 import { Todo, TodoDocument } from './schemas/todo.schema';
-import {
-  ExternalTodoTable,
-  TodoTable,
-} from 'src/types/tables/create-todo.table';
+import { ExternalTodoTable } from 'src/types/tables/create-todo.table';
 
 @Injectable()
 export class TodosRepository {
@@ -48,7 +45,7 @@ export class TodosRepository {
     await this.todoModel.findOneAndUpdate({ id }, { title: text });
   }
 
-  async getTodoCursor(): Promise<Array<TodoTable>> {
+  async getTodoCursor(): Promise<Array<Todo>> {
     return this.todoModel.find().sort({ id: -1 }).limit(1);
   }
 

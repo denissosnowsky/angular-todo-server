@@ -41,7 +41,7 @@ export class TodosController {
   }
 
   @Get()
-  getTodos(
+  findTodos(
     @Query('limit') limit?: number,
     @Query('skip') skip?: number,
   ): Promise<{
