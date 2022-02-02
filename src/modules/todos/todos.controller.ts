@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { TodoDAO } from 'src/types/dao/create-todo.dao';
+import { ImportantEnum } from 'src/types/types';
 import { Todo } from './schemas/todo.schema';
 import { TodosService } from './todos.service';
 
@@ -30,9 +31,9 @@ export class TodosController {
   @Put(':id/change')
   changeTodo(
     @Param('id', ParseIntPipe) todoId: number,
-    @Body() body: { text: string },
+    @Body() body: { text: string; priority: ImportantEnum },
   ): Promise<void> {
-    return this.todosService.changeTodo(todoId, body.text);
+    return this.todosService.changeTodo(todoId, body.text, body.priority);
   }
 
   @Delete('/delete')
@@ -44,6 +45,8 @@ export class TodosController {
   findTodos(
     @Query('limit') limit?: number,
     @Query('skip') skip?: number,
+    @Query('complete') complete?: string,
+    @Query('important') important?: string,
   ): Promise<{
     todos: Todo[];
     count: number;
@@ -51,6 +54,8 @@ export class TodosController {
     return this.todosService.findTodos(
       limit ?? Number(limit),
       skip ?? Number(skip),
+      complete,
+      important,
     );
   }
 

@@ -1,5 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+
+import { ImportantEnum } from 'src/types/types';
 
 export type TodoDocument = Todo & Document;
 
@@ -16,6 +18,20 @@ export class Todo {
 
   @Prop()
   completed: boolean;
+
+  @Prop(
+    raw({
+      type: String,
+      enum: [
+        ImportantEnum.NONE,
+        ImportantEnum.HIGH,
+        ImportantEnum.NORMAL,
+        ImportantEnum.LOW,
+      ],
+      default: ImportantEnum.NONE,
+    }),
+  )
+  important: ImportantEnum;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

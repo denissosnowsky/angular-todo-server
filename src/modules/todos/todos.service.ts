@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { TodoDAO } from 'src/types/dao/create-todo.dao';
+import { ImportantEnum } from 'src/types/types';
 import { Todo } from './schemas/todo.schema';
 import { TodosRepository } from './todos.repository';
 
@@ -16,20 +17,54 @@ export class TodosService {
     todosCount: number,
     limit: number,
     skip: number,
+    complete: string,
+    important: string,
   ) => {
     if (todosCount) {
       this.isDatabaseInited = true;
       return {
-        todos: await this.todosRepository.findTodos(limit, skip),
+        todos: await this.todosRepository.findTodos(
+          limit,
+          skip,
+          complete,
+          important,
+        ),
         count: todosCount,
       };
     } else {
       const externalData = await this.todosRepository.getExternalData();
       if (externalData.length > 0) {
         this.isDatabaseInited = true;
+        const todos = limit ? externalData.slice(0, limit) : externalData;
+        if (complete) {
+          switch (complete) {
+            case 'complete':
+              todos.filter((item) => item.completed);
+              break;
+            case 'uncomplete':
+              todos.filter((item) => !item.completed);
+              break;
+          }
+        }
+        if (important) {
+          switch (important) {
+            case 'high':
+              todos.filter((item) => item.important === 'high');
+              break;
+            case 'low':
+              todos.filter((item) => item.important === 'low');
+              break;
+            case 'normal':
+              todos.filter((item) => item.important === 'normal');
+              break;
+            case 'none':
+              todos.filter((item) => item.important === '');
+              break;
+          }
+        }
         return {
-          todos: limit ? externalData.slice(0, limit) : externalData,
-          count: await this.todosRepository.getTodosCount(),
+          todos: todos,
+          count: await this.todosRepository.getTodosCount(complete, important),
         };
       } else {
         return {
@@ -54,6 +89,8 @@ export class TodosService {
   async findTodos(
     limit?: number,
     skip?: number,
+    complete?: string,
+    important?: string,
   ): Promise<{
     todos: Todo[];
     count: number;
@@ -62,12 +99,26 @@ export class TodosService {
     try {
       if (this.isDatabaseInited) {
         return {
-          todos: await this.todosRepository.findTodos(limit, skip),
-          count: await this.todosRepository.getTodosCount(),
+          todos: await this.todosRepository.findTodos(
+            limit,
+            skip,
+            complete,
+            important,
+          ),
+          count: await this.todosRepository.getTodosCount(complete, important),
         };
       } else {
-        const todosCount = await this.todosRepository.getTodosCount();
-        return this.initializeDatabase(todosCount, limit, skip);
+        const todosCount = await this.todosRepository.getTodosCount(
+          complete,
+          important,
+        );
+        return this.initializeDatabase(
+          todosCount,
+          limit,
+          skip,
+          complete,
+          important,
+        );
       }
     } catch {
       throw new InternalServerErrorException();
@@ -92,10 +143,14 @@ export class TodosService {
     }
   }
 
-  async changeTodo(id: number, text: string): Promise<void> {
+  async changeTodo(
+    id: number,
+    text: string,
+    priority: ImportantEnum,
+  ): Promise<void> {
     this.logger.log('changing todo...');
     try {
-      await this.todosRepository.changeTodo(id, text);
+      await this.todosRepository.changeTodo(id, text, priority);
     } catch {
       throw new InternalServerErrorException();
     }
