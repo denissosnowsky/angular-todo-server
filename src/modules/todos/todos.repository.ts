@@ -14,6 +14,7 @@ import { ImportantEnum } from 'src/types/types';
 @Injectable()
 export class TodosRepository {
   private findTodosByCompelteAndImportant = async (
+    userId: string,
     complete: string,
     important: string,
     limit?: number,
@@ -23,6 +24,7 @@ export class TodosRepository {
       ? await this.todoModel
           .find()
           .where({
+            userId,
             completed: completeConvert(complete as Complete),
             important: important,
           })
@@ -32,6 +34,7 @@ export class TodosRepository {
       : await this.todoModel
           .find()
           .where({
+            userId,
             completed: completeConvert(complete as Complete),
             important: important,
           })
@@ -40,6 +43,7 @@ export class TodosRepository {
   };
 
   private findTodosByComplete = async (
+    userId: string,
     complete: string,
     limit?: number,
     skip?: number,
@@ -47,18 +51,25 @@ export class TodosRepository {
     return limit
       ? await this.todoModel
           .find()
-          .where({ completed: completeConvert(complete as Complete) })
+          .where({
+            userId,
+            completed: completeConvert(complete as Complete),
+          })
           .limit(limit)
           .skip(skip ? skip : 0)
           .sort({ id: -1 })
       : await this.todoModel
           .find()
-          .where({ completed: completeConvert(complete as Complete) })
+          .where({
+            userId,
+            completed: completeConvert(complete as Complete),
+          })
           .skip(skip ? skip : 0)
           .sort({ id: -1 });
   };
 
   private findTodosByImportant = async (
+    userId: string,
     important: string,
     limit?: number,
     skip?: number,
@@ -66,53 +77,69 @@ export class TodosRepository {
     return limit
       ? await this.todoModel
           .find()
-          .where({ important: important })
+          .where({ userId, important: important })
           .limit(limit)
           .skip(skip ? skip : 0)
           .sort({ id: -1 })
       : await this.todoModel
           .find()
-          .where({ important: important })
+          .where({ userId, important: important })
           .skip(skip ? skip : 0)
           .sort({ id: -1 });
   };
 
-  private findAllTodos = async (limit?: number, skip?: number) => {
+  private findAllTodos = async (
+    userId: string,
+    limit?: number,
+    skip?: number,
+  ) => {
     return limit
       ? await this.todoModel
           .find()
+          .where({ userId })
           .limit(limit)
           .skip(skip ? skip : 0)
           .sort({ id: -1 })
       : await this.todoModel
           .find()
+          .where({ userId })
           .skip(skip ? skip : 0)
           .sort({ id: -1 });
   };
 
   private getTodosCountByCompelteAndImportant = async (
+    userId: string,
     complete: string,
     important: string,
   ) => {
     return await this.todoModel
       .where({
+        userId,
         completed: completeConvert(complete as Complete),
         important: important,
       })
       .count();
   };
 
-  private getTodosCountByCompelte = async (complete: string) => {
+  private getTodosCountByCompelte = async (
+    userId: string,
+    complete: string,
+  ) => {
     return await this.todoModel
       .where({
+        userId,
         completed: completeConvert(complete as Complete),
       })
       .count();
   };
 
-  private getTodosCountByImportant = async (important: string) => {
+  private getTodosCountByImportant = async (
+    userId: string,
+    important: string,
+  ) => {
     return await this.todoModel
       .where({
+        userId,
         important: important,
       })
       .count();
@@ -124,6 +151,7 @@ export class TodosRepository {
   ) {}
 
   async findTodos(
+    userId: string,
     limit?: number,
     skip?: number,
     complete?: string,
@@ -133,6 +161,7 @@ export class TodosRepository {
 
     if (complete && important) {
       todos = await this.findTodosByCompelteAndImportant(
+        userId,
         complete,
         important,
         limit,
@@ -141,15 +170,15 @@ export class TodosRepository {
     }
 
     if (complete && !important) {
-      todos = await this.findTodosByComplete(complete, limit, skip);
+      todos = await this.findTodosByComplete(userId, complete, limit, skip);
     }
 
     if (important && !complete) {
-      todos = await this.findTodosByImportant(important, limit, skip);
+      todos = await this.findTodosByImportant(userId, important, limit, skip);
     }
 
     if (!important && !complete) {
-      todos = await this.findAllTodos(limit, skip);
+      todos = await this.findAllTodos(userId, limit, skip);
     }
 
     return todos;
@@ -163,31 +192,30 @@ export class TodosRepository {
     return createdTodo.save();
   }
 
-  async deleteTodo(ids: Array<number>): Promise<void> {
-    await this.todoModel.deleteMany({ id: { $in: ids } });
+  async deleteTodo(userId: string, ids: Array<number>): Promise<void> {
+    await this.todoModel.where({ userId }).deleteMany({ id: { $in: ids } });
   }
 
-  async completeTodo(id: number): Promise<void> {
-    const todo = await this.todoModel.findOne({ id });
-    await this.todoModel.findOneAndUpdate(
-      { id },
-      { completed: !todo.completed },
-    );
+  async completeTodo(userId: string, id: string): Promise<void> {
+    const todo = await this.todoModel.where({ userId }).findOne({ id });
+    await this.todoModel
+      .where({ userId })
+      .findOneAndUpdate({ id }, { completed: !todo.completed });
   }
 
   async changeTodo(
-    id: number,
+    userId: string,
+    id: string,
     text: string,
     priority: ImportantEnum,
   ): Promise<void> {
-    await this.todoModel.findOneAndUpdate(
-      { id },
-      { title: text, important: priority },
-    );
+    await this.todoModel
+      .where({ userId })
+      .findOneAndUpdate({ id }, { title: text, important: priority });
   }
 
-  async getTodoCursor(): Promise<Array<Todo>> {
-    return this.todoModel.find().sort({ id: -1 }).limit(1);
+  async getTodoCursor(userId: string): Promise<Array<Todo>> {
+    return this.todoModel.where({ userId }).find().sort({ id: -1 }).limit(1);
   }
 
   async getExternalData(): Promise<ExternalTodoTable[]> {
@@ -199,23 +227,32 @@ export class TodosRepository {
     return externalData;
   }
 
-  async getTodosCount(complete?: string, important?: string): Promise<number> {
+  async getTodosCount(
+    userId: string,
+    complete?: string,
+    important?: string,
+  ): Promise<number> {
     let count: number;
 
     if (complete && important) {
       count = await this.getTodosCountByCompelteAndImportant(
+        userId,
         complete,
         important,
       );
     }
     if (complete && !important) {
-      count = await this.getTodosCountByCompelte(complete);
+      count = await this.getTodosCountByCompelte(userId, complete);
     }
     if (important && !complete) {
-      count = await this.getTodosCountByImportant(important);
+      count = await this.getTodosCountByImportant(userId, important);
     }
     if (!complete && !important) {
-      count = await this.todoModel.count();
+      count = await this.todoModel
+        .where({
+          userId,
+        })
+        .count();
     }
     return count;
   }

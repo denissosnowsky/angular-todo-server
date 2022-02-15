@@ -8,7 +8,7 @@ export type TodoDocument = Todo & Document;
 @Schema()
 export class Todo {
   @Prop()
-  userId: number;
+  userId: string;
 
   @Prop()
   id: number;

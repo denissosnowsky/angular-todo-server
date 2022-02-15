@@ -1,5 +1,5 @@
 export type TodoDAO = {
-  userId: number;
+  userId: string;
   id: number;
   title: string;
 };

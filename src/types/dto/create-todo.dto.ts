@@ -1,7 +1,7 @@
 import { ImportantEnum } from '../types';
 
 export type TodoDTO = {
-  userId: number;
+  userId: string;
   id: number;
   title: string;
   completed: boolean;

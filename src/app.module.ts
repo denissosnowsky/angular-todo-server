@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './modules/auth/auth.module';
 
 import { TodosModule } from './modules/todos/todos.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { TodosModule } from './modules/todos/todos.module';
       inject: [ConfigService],
     }),
     TodosModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
