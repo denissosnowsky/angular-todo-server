@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TodoDAO } from 'src/types/dao/create-todo.dao';
 import { ConfigService } from '@nestjs/config';
-import fetch from 'node-fetch';
 
 import { Todo, TodoDocument } from './schemas/todo.schema';
 import { ExternalTodoTable } from 'src/types/tables/create-todo.table';
@@ -216,15 +215,6 @@ export class TodosRepository {
 
   async getTodoCursor(userId: string): Promise<Array<Todo>> {
     return this.todoModel.where({ userId }).find().sort({ id: -1 }).limit(1);
-  }
-
-  async getExternalData(): Promise<ExternalTodoTable[]> {
-    const externalData = await fetch(
-      this.configService.get<string>('JSON_SERVER_URI'),
-    ).then((data) => data.json() as Promise<ExternalTodoTable[]>);
-
-    await this.todoModel.insertMany(externalData);
-    return externalData;
   }
 
   async getTodosCount(

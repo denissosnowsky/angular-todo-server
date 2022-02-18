@@ -47,6 +47,7 @@ export class AuthService {
           photo: returnedPhoto,
         }),
         name: returnedName,
+        email: returnedEmail,
         photo: returnedPhoto,
         id: returnedId,
       };
@@ -80,6 +81,7 @@ export class AuthService {
         id: returnedId,
         photo: returnedPhoto,
       }),
+      email: returnedEmail,
       name: returnedName,
       photo: returnedPhoto,
       id: returnedId,
@@ -87,16 +89,21 @@ export class AuthService {
   };
 
   verify = async (user: Omit<UserDTO, 'token'>) => {
-    const returnedId = user.id;
-    const returnedName = user.name;
-    const returnedPhoto = user.photo;
+    const fetchedUser = await this.usersService.findUser(user.email);
+
+    const returnedId = fetchedUser._id;
+    const returnedName = fetchedUser.name;
+    const returnedPhoto = fetchedUser.photo;
+    const returnedEmail = fetchedUser.email;
 
     return {
       token: await this.jwtService.sign({
+        email: returnedEmail,
         name: returnedName,
         id: returnedId,
         photo: returnedPhoto,
       }),
+      email: returnedEmail,
       name: returnedName,
       photo: returnedPhoto,
       id: returnedId,

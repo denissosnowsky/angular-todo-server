@@ -20,4 +20,17 @@ export class UsersRepository {
   async findUser(email: string): Promise<UserTable> {
     return this.userModel.findOne({ email });
   }
+
+  async changeName(userId: string, name: string): Promise<string> {
+    await this.userModel.findOneAndUpdate({ _id: userId }, { name });
+    const updatedUser = await this.userModel.findOne({ _id: userId });
+    return updatedUser.name;
+  }
+
+  async uploadPhoto(userId: string, photoName: string): Promise<void> {
+    await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      { photo: photoName },
+    );
+  }
 }
