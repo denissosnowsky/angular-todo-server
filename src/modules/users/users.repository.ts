@@ -33,4 +33,26 @@ export class UsersRepository {
       { photo: photoName },
     );
   }
+
+  async activateAccount(link: string): Promise<void> {
+    await this.userModel.findOneAndUpdate(
+      { activationLink: link },
+      { isActivated: true },
+    );
+  }
+
+  async changePassword(userEmail: string, password: string): Promise<void> {
+    await this.userModel.findOneAndUpdate({ email: userEmail }, { password });
+  }
+
+  async changeEmail(
+    oldEmail: string,
+    newEmail: string,
+    activationLink: string,
+  ): Promise<void> {
+    await this.userModel.findOneAndUpdate(
+      { email: oldEmail },
+      { email: newEmail, activationLink, isActivated: false },
+    );
+  }
 }

@@ -4,4 +4,6 @@ export type UserDTO = {
   photo: string;
   token: string;
   id: string;
+  isActivated: boolean;
+  activationLink: string;
 };

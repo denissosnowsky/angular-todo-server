@@ -5,11 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+
 import { CreateUserDAO } from 'src/types/dao/create-user.dao';
 import { UserDTO } from 'src/types/dto/user.dto';
 import { UserTable } from 'src/types/tables/user.table';
 import { comparePassword, hashPassword } from 'src/utils/password-utils';
+import { MailService } from '../mail/mail.service';
 import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +21,8 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private mailService: MailService,
+    private configService: ConfigService,
   ) {}
 
   login = async (user: {
@@ -38,6 +43,17 @@ export class AuthService {
       const returnedId = validatedUser._id;
       const returnedName = validatedUser.name;
       const returnedPhoto = validatedUser.photo;
+      const returnedIsActivated = validatedUser.isActivated;
+      const returnedActivationLink = validatedUser.activationLink;
+
+      if (!returnedIsActivated) {
+        await this.mailService.sendActivationMail(
+          user.email,
+          `${this.configService.get<string>('API_URL')}/auth/activate/${
+            validatedUser.activationLink
+          }`,
+        );
+      }
 
       return {
         token: await this.jwtService.sign({
@@ -45,11 +61,15 @@ export class AuthService {
           name: returnedName,
           id: returnedId,
           photo: returnedPhoto,
+          isActivated: returnedIsActivated,
+          activationLink: returnedActivationLink,
         }),
         name: returnedName,
         email: returnedEmail,
         photo: returnedPhoto,
         id: returnedId,
+        isActivated: returnedIsActivated,
+        activationLink: returnedActivationLink,
       };
     }
     throw new UnauthorizedException();
@@ -64,15 +84,26 @@ export class AuthService {
       throw new BadRequestException();
     }
 
+    const activationLink = String(Date.now());
     const hash = await hashPassword(user.password);
     const createdUser = await this.usersService.createUser({
       ...user,
       password: hash,
+      activationLink,
     });
     const returnedEmail = createdUser.email;
     const returnedId = createdUser._id;
     const returnedName = createdUser.name;
     const returnedPhoto = createdUser.photo;
+    const returnedIsActivated = createdUser.isActivated;
+    const returnedActivationLink = createdUser.activationLink;
+
+    await this.mailService.sendActivationMail(
+      user.email,
+      `${this.configService.get<string>(
+        'API_URL',
+      )}/auth/activate/${activationLink}`,
+    );
 
     return {
       token: await this.jwtService.sign({
@@ -80,33 +111,67 @@ export class AuthService {
         name: returnedName,
         id: returnedId,
         photo: returnedPhoto,
+        isActivated: returnedIsActivated,
+        activationLink: returnedActivationLink,
       }),
       email: returnedEmail,
       name: returnedName,
       photo: returnedPhoto,
       id: returnedId,
+      isActivated: returnedIsActivated,
+      activationLink: returnedActivationLink,
     };
   };
 
   verify = async (user: Omit<UserDTO, 'token'>) => {
-    const fetchedUser = await this.usersService.findUser(user.email);
+    try {
+      const fetchedUser = await this.usersService.findUser(user.email);
 
-    const returnedId = fetchedUser._id;
-    const returnedName = fetchedUser.name;
-    const returnedPhoto = fetchedUser.photo;
-    const returnedEmail = fetchedUser.email;
+      const returnedId = fetchedUser._id;
+      const returnedName = fetchedUser.name;
+      const returnedPhoto = fetchedUser.photo;
+      const returnedEmail = fetchedUser.email;
+      const returnedIsActivated = fetchedUser.isActivated;
+      const returnedActivationLink = fetchedUser.activationLink;
 
-    return {
-      token: await this.jwtService.sign({
+      if (!returnedIsActivated) {
+        await this.mailService.sendActivationMail(
+          user.email,
+          `${this.configService.get<string>('API_URL')}/auth/activate/${
+            fetchedUser.activationLink
+          }`,
+        );
+      }
+
+      return {
+        token: await this.jwtService.sign({
+          email: returnedEmail,
+          name: returnedName,
+          id: returnedId,
+          photo: returnedPhoto,
+          isActivated: returnedIsActivated,
+          activationLink: returnedActivationLink,
+        }),
         email: returnedEmail,
         name: returnedName,
-        id: returnedId,
         photo: returnedPhoto,
-      }),
-      email: returnedEmail,
-      name: returnedName,
-      photo: returnedPhoto,
-      id: returnedId,
-    };
+        id: returnedId,
+        isActivated: returnedIsActivated,
+        activationLink: returnedActivationLink,
+      };
+    } catch {
+      throw new UnauthorizedException();
+    }
+  };
+
+  activateAccount = async (link: string) => {
+    return this.usersService.activateAccount(link);
+  };
+
+  sendEmail = async (link: string, email: string) => {
+    await this.mailService.sendActivationMail(
+      email,
+      `${this.configService.get<string>('API_URL')}/auth/activate/${link}`,
+    );
   };
 }

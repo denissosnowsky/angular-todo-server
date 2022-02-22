@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
@@ -16,6 +16,17 @@ export class User {
 
   @Prop()
   password: string;
+
+  @Prop(
+    raw({
+      type: Boolean,
+      default: false,
+    }),
+  )
+  isActivated: boolean;
+
+  @Prop()
+  activationLink: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

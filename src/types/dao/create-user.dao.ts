@@ -3,4 +3,5 @@ export type CreateUserDAO = {
   photo: string;
   email: string;
   password: string;
+  activationLink: string;
 };

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './modules/auth/auth.module';
 
+import { AuthModule } from './modules/auth/auth.module';
+import { MailModule } from './modules/mail/mail.module';
 import { TodosModule } from './modules/todos/todos.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -19,6 +20,7 @@ import { UsersModule } from './modules/users/users.module';
     TodosModule,
     UsersModule,
     AuthModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],
