@@ -117,4 +117,13 @@ export class UsersService {
       throw new InternalServerErrorException();
     }
   }
+
+  async resetPassword(email: string, password: string): Promise<void> {
+    this.logger.log('reseting password...');
+    try {
+      await this.usersRepository.changePassword(email, password);
+    } catch {
+      throw new InternalServerErrorException();
+    }
+  }
 }

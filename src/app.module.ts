@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { AvatarsModule } from './modules/avatars/avatars.module';
 import { MailModule } from './modules/mail/mail.module';
 import { TodosModule } from './modules/todos/todos.module';
 import { UsersModule } from './modules/users/users.module';
@@ -21,8 +22,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     MailModule,
+    AvatarsModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

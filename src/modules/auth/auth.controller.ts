@@ -3,10 +3,14 @@ import {
   Post,
   Body,
   UseGuards,
-  Request,
   Get,
   Param,
+  Res,
+  Request,
 } from '@nestjs/common';
+import { Response } from 'express';
+import * as path from 'path';
+
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { CreateUserDAO } from 'src/types/dao/create-user.dao';
 import { AuthService } from './auth.service';
@@ -31,12 +35,21 @@ export class AuthController {
   }
 
   @Get('activate/:link')
-  async activateAccount(@Param('link') link: string) {
-    return this.authService.activateAccount(link);
+  async activateAccount(
+    @Param('link') link: string,
+    @Res() response: Response,
+  ) {
+    this.authService.activateAccount(link);
+    response.sendFile(path.join(__dirname, './html/link.html'));
   }
 
   @Post('sendEmail')
   async sendEmail(@Body() body: { link: string; email: string }) {
     return this.authService.sendEmail(body.link, body.email);
+  }
+
+  @Post('sendReset')
+  async sendReset(@Body() body: { email: string }) {
+    return this.authService.sendReset(body.email);
   }
 }

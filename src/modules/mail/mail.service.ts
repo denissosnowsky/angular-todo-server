@@ -47,4 +47,19 @@ export class MailService {
             `,
     });
   }
+
+  async sendPassword(to: string, password: string) {
+    await this.getTransporter().sendMail({
+      from: this.configService.get<string>('SMTP_USER'),
+      to,
+      subject: 'New password',
+      text: '',
+      html: `
+                <div>
+                    <h1>Here is your new password:</h1>
+                    <p>${password}</p>
+                </div>
+            `,
+    });
+  }
 }

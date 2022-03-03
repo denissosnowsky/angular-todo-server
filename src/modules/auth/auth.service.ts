@@ -174,4 +174,23 @@ export class AuthService {
       `${this.configService.get<string>('API_URL')}/auth/activate/${link}`,
     );
   };
+
+  sendReset = async (email: string) => {
+    try {
+      const user = await this.usersService.findUser(email);
+
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+
+      const password = String(Date.now());
+      const hash = await hashPassword(password);
+
+      this.usersService.resetPassword(email, hash);
+
+      await this.mailService.sendPassword(email, password);
+    } catch {
+      throw new BadRequestException();
+    }
+  };
 }
