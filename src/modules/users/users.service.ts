@@ -68,6 +68,15 @@ export class UsersService {
     }
   }
 
+  async confirmNewPassword(link: string): Promise<void> {
+    this.logger.log('confirm password link approving...');
+    try {
+      return this.usersRepository.confirmNewPassword(link);
+    } catch {
+      throw new InternalServerErrorException();
+    }
+  }
+
   async changePassword(
     userEmail: string,
     oldPass: string,
@@ -82,12 +91,19 @@ export class UsersService {
       ) {
         const hash = await hashPassword(newPass);
         await this.usersRepository.changePassword(userEmail, hash);
-        return;
+
+        await this.mailService.sendPasswordChangeConfirmation(
+          validatedUser.email,
+          `${this.configService.get<string>('API_URL')}/users/passConfirm/${
+            validatedUser.activationLink
+          }`,
+        );
+        return undefined;
       }
 
       throw new UnauthorizedException();
     } catch {
-      throw new InternalServerErrorException();
+      throw new UnauthorizedException();
     }
   }
 

@@ -41,8 +41,19 @@ export class UsersRepository {
     );
   }
 
+  async confirmNewPassword(link: string): Promise<void> {
+    const user = await this.userModel.findOne({ activationLink: link });
+    const newPassword = user.changedPassword;
+    if (newPassword) {
+      await user.updateOne({ password: newPassword, changedPassword: '' });
+    }
+  }
+
   async changePassword(userEmail: string, password: string): Promise<void> {
-    await this.userModel.findOneAndUpdate({ email: userEmail }, { password });
+    await this.userModel.findOneAndUpdate(
+      { email: userEmail },
+      { changedPassword: password },
+    );
   }
 
   async changeEmail(

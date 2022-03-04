@@ -2,13 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Put,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { Response } from 'express';
+import * as path from 'path';
 
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -26,13 +30,16 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Put('/photo')
-  uploadPhoto(@Body() photoBody: { photoName: string }, @Request() req): void {
-    this.usersService.uploadPhoto(req.user.id, photoBody.photoName);
+  async uploadPhoto(
+    @Body() photoBody: { photoName: string },
+    @Request() req,
+  ): Promise<void> {
+    return this.usersService.uploadPhoto(req.user.id, photoBody.photoName);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('/pass')
-  changePassword(
+  async changePassword(
     @Body() nameBody: { oldPass: string; newPass: string },
     @Request() req,
   ): Promise<void> {
@@ -41,6 +48,15 @@ export class UsersController {
       nameBody.oldPass,
       nameBody.newPass,
     );
+  }
+
+  @Get('passConfirm/:link')
+  async activateAccount(
+    @Param('link') link: string,
+    @Res() response: Response,
+  ) {
+    await this.usersService.confirmNewPassword(link);
+    response.sendFile(path.join(__dirname, './html/password.html'));
   }
 
   @UseGuards(JwtAuthGuard)

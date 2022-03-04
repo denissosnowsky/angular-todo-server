@@ -5,5 +5,6 @@ export type UserTable = {
   email: string;
   isActivated: boolean;
   activationLink: string;
+  changedPassword: string;
   _id: string;
 };

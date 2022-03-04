@@ -48,6 +48,21 @@ export class MailService {
     });
   }
 
+  async sendPasswordChangeConfirmation(to: string, link: string) {
+    await this.getTransporter().sendMail({
+      from: this.configService.get<string>('SMTP_USER'),
+      to,
+      subject: 'Confirm your password changing',
+      text: '',
+      html: `
+                <div>
+                    <h1>Please, follow the link below to confirm your password changing</h1>
+                    <a href="${link}">${link}</a>
+                </div>
+            `,
+    });
+  }
+
   async sendPassword(to: string, password: string) {
     await this.getTransporter().sendMail({
       from: this.configService.get<string>('SMTP_USER'),

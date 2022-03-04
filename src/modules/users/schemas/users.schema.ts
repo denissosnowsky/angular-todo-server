@@ -19,6 +19,14 @@ export class User {
 
   @Prop(
     raw({
+      type: String,
+      default: '',
+    }),
+  )
+  changedPassword: string;
+
+  @Prop(
+    raw({
       type: Boolean,
       default: false,
     }),
