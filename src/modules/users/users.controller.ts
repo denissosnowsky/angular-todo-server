@@ -53,7 +53,9 @@ export class UsersController {
   @Get('passConfirm/:link')
   async passConfirm(@Param('link') link: string, @Res() response: Response) {
     await this.usersService.confirmNewPassword(link);
-    response.sendFile(path.join(__dirname, './html/password.html'));
+    response.sendFile(
+      path.join(__dirname, '../../../../src/html/password.html'),
+    );
   }
 
   @UseGuards(JwtAuthGuard)

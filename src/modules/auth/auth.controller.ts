@@ -40,7 +40,7 @@ export class AuthController {
     @Res() response: Response,
   ) {
     this.authService.activateAccount(link);
-    response.sendFile(path.join(__dirname, './html/link.html'));
+    response.sendFile(path.join(__dirname, '../../../../src/html/link.html'));
   }
 
   @Post('sendEmail')

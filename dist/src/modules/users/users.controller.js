@@ -32,7 +32,7 @@ let UsersController = class UsersController {
     }
     async passConfirm(link, response) {
         await this.usersService.confirmNewPassword(link);
-        response.sendFile(path.join(__dirname, './html/password.html'));
+        response.sendFile(path.join(__dirname, '../../../../src/html/password.html'));
     }
     changeEmail(nameBody, req) {
         return this.usersService.changeEmail(req.user.email, nameBody.email);

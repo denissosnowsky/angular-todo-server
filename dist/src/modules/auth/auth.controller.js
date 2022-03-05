@@ -32,7 +32,7 @@ let AuthController = class AuthController {
     }
     async activateAccount(link, response) {
         this.authService.activateAccount(link);
-        response.sendFile(path.join(__dirname, './html/link.html'));
+        response.sendFile(path.join(__dirname, '../../../../src/html/link.html'));
     }
     async sendEmail(body) {
         return this.authService.sendEmail(body.link, body.email);
