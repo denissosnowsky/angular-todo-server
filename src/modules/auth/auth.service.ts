@@ -186,9 +186,15 @@ export class AuthService {
       const password = String(Date.now());
       const hash = await hashPassword(password);
 
-      this.usersService.resetPassword(email, hash);
+      await this.usersService.resetPassword(email, hash);
 
-      await this.mailService.sendPassword(email, password);
+      await this.mailService.sendPassword(
+        user.email,
+        `${this.configService.get<string>('API_URL')}/users/passConfirm/${
+          user.activationLink
+        }`,
+        password,
+      );
     } catch {
       throw new BadRequestException();
     }

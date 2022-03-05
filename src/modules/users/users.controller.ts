@@ -51,10 +51,7 @@ export class UsersController {
   }
 
   @Get('passConfirm/:link')
-  async activateAccount(
-    @Param('link') link: string,
-    @Res() response: Response,
-  ) {
+  async passConfirm(@Param('link') link: string, @Res() response: Response) {
     await this.usersService.confirmNewPassword(link);
     response.sendFile(path.join(__dirname, './html/password.html'));
   }

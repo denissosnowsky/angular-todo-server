@@ -63,16 +63,19 @@ export class MailService {
     });
   }
 
-  async sendPassword(to: string, password: string) {
+  async sendPassword(to: string, link: string, password: string) {
     await this.getTransporter().sendMail({
       from: this.configService.get<string>('SMTP_USER'),
       to,
-      subject: 'New password',
+      subject: 'Confirm your password changing',
       text: '',
       html: `
                 <div>
-                    <h1>Here is your new password:</h1>
-                    <p>${password}</p>
+                    <h4>Here is your new password: ${password}</h4>
+                </div>
+                <div>
+                    <h1>Please, follow the link below to activate the password. If it wasn't you, ignore the link</h1>
+                    <a href="${link}">${link}</a>
                 </div>
             `,
     });
