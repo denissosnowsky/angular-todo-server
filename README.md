@@ -14,7 +14,6 @@ This command will install all the needed dependencies to the server.
 ## Launch
 
 Now your server is good to go.
-
 Run this command in the project directory to start:
 
 ### `npm start`
