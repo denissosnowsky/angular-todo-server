@@ -21,15 +21,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "husky install",
     "lint": "eslint ./src --ext .ts",
-    "lint:fix": "yarn run lint -- --fix",
+    "lint:fix": "npm run lint -- --fix",
     "lint:staged": "npx lint-staged --relative",
     "prettier": "prettier --check \"src/**/*.ts\"",
     "prettier:fix": "prettier --write \"src/**/*.ts\"",
     "prettier:staged": "pretty-quick --pattern \"src/**/*.ts\" --staged",
-    "pre-commit-check": "yarn run prettier:staged && yarn run lint:staged"
+    "pre-commit-check": "npm run prettier:staged && npm run lint:staged"
   },
   "lint-staged": {
-    "src/**/*.{js,ts}": "yarn run lint:fix"
+    "src/**/*.{js,ts}": "npm run lint:fix"
   },
   "dependencies": {
     "@google-cloud/storage": "^5.18.1",
@@ -44,7 +44,7 @@
     "firebase": "^9.6.6",
     "mongoose": "^6.1.6",
     "node-fetch": "^3.2.0",
-    "nodemailer": "^6.7.2",
+    "nodemailer": "^6.9.2",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
